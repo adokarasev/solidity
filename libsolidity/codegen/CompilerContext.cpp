@@ -329,6 +329,7 @@ void CompilerContext::appendInlineAssembly(
 		analyzerResult = assembly::AsmAnalyzer(
 			analysisInfo,
 			errorReporter,
+			boost::none,
 			assembly::AsmFlavour::Strict,
 			identifierAccess.resolve
 		).analyze(*parserResult);

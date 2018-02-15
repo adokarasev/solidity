@@ -61,7 +61,7 @@ pair<shared_ptr<Block>, shared_ptr<assembly::AsmAnalysisInfo>> dev::julia::test:
 	{
 		BOOST_REQUIRE(errorReporter.errors().empty());
 		auto analysisInfo = make_shared<assembly::AsmAnalysisInfo>();
-		assembly::AsmAnalyzer analyzer(*analysisInfo, errorReporter, flavour);
+		assembly::AsmAnalyzer analyzer(*analysisInfo, errorReporter, boost::none, flavour);
 		if (analyzer.analyze(*parserResult))
 		{
 			BOOST_REQUIRE(errorReporter.errors().empty());

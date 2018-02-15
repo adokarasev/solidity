@@ -872,9 +872,14 @@ bool TypeChecker::visit(InlineAssembly const& _inlineAssembly)
 	};
 	solAssert(!_inlineAssembly.annotation().analysisInfo, "");
 	_inlineAssembly.annotation().analysisInfo = make_shared<assembly::AsmAnalysisInfo>();
+	boost::optional<Error::Type> errorTypeForLoose =
+		m_scope->sourceUnit().annotation().experimentalFeatures.count(ExperimentalFeature::V050) ?
+		Error::Type::SyntaxError :
+		Error::Type::Warning;
 	assembly::AsmAnalyzer analyzer(
 		*_inlineAssembly.annotation().analysisInfo,
 		m_errorReporter,
+		errorTypeForLoose,
 		assembly::AsmFlavour::Loose,
 		identifierAccess
 	);
