@@ -747,6 +747,19 @@ bool CommandLineInterface::processInput()
 			if (!parseLibraryOption(library))
 				return false;
 
+	EVMVersion evmVersion;
+	if (m_args.count(g_strEVMVersion))
+	{
+		string versionOptionStr = m_args[g_strEVMVersion].as<string>();
+		boost::optional<EVMVersion> versionOption = EVMVersion::fromString(versionOptionStr);
+		if (!versionOption)
+		{
+			cerr << "Invalid option for --evm-version: " << versionOptionStr << endl;
+			return false;
+		}
+		evmVersion = *versionOption;
+	}
+
 	if (m_args.count(g_argAssemble) || m_args.count(g_argStrictAssembly) || m_args.count(g_argJulia))
 	{
 		// switch to assembly mode
@@ -770,7 +783,7 @@ bool CommandLineInterface::processInput()
 				return false;
 			}
 		}
-		return assemble(inputLanguage, targetMachine);
+		return assemble(evmVersion, inputLanguage, targetMachine);
 	}
 	if (m_args.count(g_argLink))
 	{
@@ -780,19 +793,6 @@ bool CommandLineInterface::processInput()
 	}
 
 	m_compiler.reset(new CompilerStack(fileReader));
-
-	EVMVersion evmVersion;
-	if (m_args.count(g_strEVMVersion))
-	{
-		string versionOptionStr = m_args[g_strEVMVersion].as<string>();
-		boost::optional<EVMVersion> versionOption = EVMVersion::fromString(versionOptionStr);
-		if (!versionOption)
-		{
-			cerr << "Invalid option for --evm-version: " << versionOptionStr << endl;
-			return false;
-		}
-		evmVersion = *versionOption;
-	}
 
 	auto scannerFromSourceName = [&](string const& _sourceName) -> solidity::Scanner const& { return m_compiler->scanner(_sourceName); };
 	SourceReferenceFormatter formatter(cerr, scannerFromSourceName);
@@ -1080,6 +1080,7 @@ void CommandLineInterface::writeLinkedFiles()
 }
 
 bool CommandLineInterface::assemble(
+	EVMVersion _evmVersion,
 	AssemblyStack::Language _language,
 	AssemblyStack::Machine _targetMachine
 )
@@ -1088,7 +1089,7 @@ bool CommandLineInterface::assemble(
 	map<string, AssemblyStack> assemblyStacks;
 	for (auto const& src: m_sourceCodes)
 	{
-		auto& stack = assemblyStacks[src.first] = AssemblyStack(_language);
+		auto& stack = assemblyStacks[src.first] = AssemblyStack(_evmVersion, _language);
 		try
 		{
 			if (!stack.parseAndAnalyze(src.first, src.second))
