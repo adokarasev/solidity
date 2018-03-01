@@ -74,7 +74,7 @@ public:
 		gas += gasForTransaction(m_compiler.object(m_compiler.lastContractName()).bytecode, true);
 
 		BOOST_REQUIRE(!gas.isInfinite);
-		BOOST_CHECK(gas.value == m_gasUsed);
+		BOOST_CHECK_EQUAL(gas.value, m_gasUsed);
 	}
 
 	/// Compares the gas computed by PathGasMeter for the given signature (but unknown arguments)
@@ -96,7 +96,7 @@ public:
 			_sig
 		);
 		BOOST_REQUIRE(!gas.isInfinite);
-		BOOST_CHECK(gas.value == m_gasUsed);
+		BOOST_CHECK_EQUAL(gas.value, m_gasUsed);
 	}
 
 	static GasMeter::GasConsumption gasForTransaction(bytes const& _data, bool _isCreation)

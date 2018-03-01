@@ -29,7 +29,7 @@ using namespace dev;
 using namespace dev::eth;
 
 
-bytes dev::eth::compileLLL(string const& _src, bool _opt, vector<string>* _errors, ReadCallback const& _readFile)
+bytes dev::eth::compileLLL(string const& _src, solidity::EVMVersion _evmVersion, bool _opt, vector<string>* _errors, ReadCallback const& _readFile)
 {
 	try
 	{
@@ -37,7 +37,7 @@ bytes dev::eth::compileLLL(string const& _src, bool _opt, vector<string>* _error
 		cs.populateStandard();
 		auto assembly = CodeFragment::compile(_src, cs, _readFile).assembly(cs);
 		if (_opt)
-			assembly = assembly.optimise(true);
+			assembly = assembly.optimise(true, _evmVersion);
 		bytes ret = assembly.assemble().bytecode;
 		for (auto i: cs.treesToKill)
 			killBigints(i);

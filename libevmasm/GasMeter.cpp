@@ -78,7 +78,7 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 			break;
 		}
 		case Instruction::SLOAD:
-			gas += GasCosts::sloadGas;
+			gas += GasCosts::sloadGas(m_evmVersion);
 			break;
 		case Instruction::RETURN:
 		case Instruction::REVERT:
@@ -137,7 +137,7 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 				gas = GasConsumption::infinite();
 			else
 			{
-				gas = GasCosts::callGas;
+				gas = GasCosts::callGas(m_evmVersion);
 				if (u256 const* value = classes.knownConstant(m_state->relativeStackElement(0)))
 					gas += (*value);
 				else
@@ -155,7 +155,7 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 			break;
 		}
 		case Instruction::SELFDESTRUCT:
-			gas = GasCosts::selfdestructGas;
+			gas = GasCosts::selfdestructGas(m_evmVersion);
 			gas += GasCosts::callNewAccountGas; // We very rarely know whether the address exists.
 			break;
 		case Instruction::CREATE:
@@ -172,9 +172,15 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 		case Instruction::EXP:
 			gas = GasCosts::expGas;
 			if (u256 const* value = classes.knownConstant(m_state->relativeStackElement(-1)))
-				gas += GasCosts::expByteGas * (32 - (h256(*value).firstBitSet() / 8));
+				gas += GasCosts::expByteGas(m_evmVersion) * (32 - (h256(*value).firstBitSet() / 8));
 			else
-				gas += GasCosts::expByteGas * 32;
+				gas += GasCosts::expByteGas(m_evmVersion) * 32;
+			break;
+		case Instruction::BALANCE:
+			gas += GasCosts::balanceGas(m_evmVersion);
+			break;
+		case Instruction::EXTCODESIZE:
+			gas += GasCosts::extCodeGas(m_evmVersion);
 			break;
 		default:
 			break;
@@ -241,9 +247,6 @@ unsigned GasMeter::runGas(Instruction _instruction)
 	case Tier::Mid:     return GasCosts::tier4Gas;
 	case Tier::High:    return GasCosts::tier5Gas;
 	case Tier::Ext:     return GasCosts::tier6Gas;
-	case Tier::Special: return GasCosts::tier7Gas;
-	case Tier::ExtCode: return GasCosts::extCodeGas;
-	case Tier::Balance: return GasCosts::balanceGas;
 	default: break;
 	}
 	assertThrow(false, OptimizerException, "Invalid gas tier.");
